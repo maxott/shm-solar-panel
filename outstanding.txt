@@ -1,0 +1,8 @@
+*use header file instead of magic numbers
+
+*use python formalism
+
+*spn_controller:
+	-use python modules instead of execfile("foo.py")
+
+*somebody else should try to set up raspberry only from readme-files

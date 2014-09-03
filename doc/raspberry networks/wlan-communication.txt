@@ -1,0 +1,8 @@
+
+
+#W-Lan - Adapter on
+$ ifdown wlan0 
+$ ifup wlan0
+
+#W-Lan - Adapter off
+$ ifdown wlan0

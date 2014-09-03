@@ -1,0 +1,1 @@
+move all python scripts to the home directory of the raspberry pi into the folder ./Python-Programs.
