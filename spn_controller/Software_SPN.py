@@ -10,66 +10,104 @@
 # Import all needed Libaries
 #-------------------------------------------------------
 
+import logging
 import sys
 from time import sleep
+import rtcResetAlarm
+import safetyAlarm
+import mpptlow
+import LM75
+import nodeOn
+import nodeOff
+import rtcCatchTime
+import rtcAlarmTimetable
+import shutdown
+import FuelGauge_RemainingCapacity
+
+#-------------------------------------------------------
+# Used Constants
+#-------------------------------------------------------
+
+if_fuelgauge_constant = 0
+if_constant_bat = 1
+if_constant_temp = 80
+sleep_constant = 10
+batteryCheck = 0
+temperatureCheck = 0
+
 #-------------------------------------------------------
 # Main Program
 #-------------------------------------------------------
 
+logging.basicConfig(filename='spn_controller.log',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG)
+
 try:
-	sleep(10)
+	sleep(sleep_constant)
 
-	execfile("/home/pi/spn_controller/WLAN_on.py")
-
-	execfile("/home/pi/spn_controller/rtcResetAlarm.py")     		     	#Reset the alarm registers that a new alarm has effect
-
-	execfile("/home/pi/spn_controller/safetyAlarm.py")  				#Sets an safety alarm to 12 am
-
-	#execfile ("/home/pi/Python-Programs/batterycritical.py")                       #This script asks if the battery is critical - fuel gauge
-
-	script_locals = dict()
-	execfile("/home/pi/spn_controller/mpptlow.py", dict(), script_locals)     	#Executes the mpptlow.py program
-
-	if script_locals["scriptReturn"] == 1:				#Mppt checks if the battery is okey
-
-		script_locals = dict()					
-		execfile("/home/pi/spn_controller/LM75.py", dict(), script_locals)	#Executes the LM75.py program
+	#Reset the alarm registers that a new alarm has effect
+	rtcResetAlarm.ResetAlarm()
+	logging.info('Alarm resetted')
+  				
+	#Sets an safety alarm to 12 am
+	safetyAlarm.safety()
+	logging.info('safety alarm is set')
+	
+	#batteryCheck = FuelGauge_RemainingCapacity.RemainingCapacity()				#Fuel Gauge is looking at the battery capacity status (in %)
+	if batteryCheck == if_fuelgauge_constant:
+	#if batteryCheck >= 20:									#When there are more then 20% left - we are turning on the nodes
+		logging.info('battery okay - fuel gauge')
 		
-		if float(script_locals["scriptReturn"]) <= 80.0:	#Checks if the surrounding temperature is under 80 degrees
+		batteryCheck = mpptlow.mpptlowbat()						#Checks Battery over Mppt (if fuel gauge fails)
+	     	
+		if batteryCheck == if_constant_bat:						#if we are allowed to turn on nodes
 		
-			execfile("/home/pi/spn_controller/nodeOn.py")			#Runs the file nodeOn.py - Switch on Nodes
+			logging.info('battery okay - mppt')
+		
+			temperatureCheck = LM75.readtemp()					#Get the temperature
+		
+			if float(temperatureCheck) <= if_constant_temp:				#Checks if the surrounding temperature is under 80 degrees
+			
+				logging.info('Temperature in case is okay')
+			
+				nodeOn.nodeOn()							#Runs the file nodeOn.py - Switch on Nodes
+				logging.info('Turned on nodes')
 
-			#-----------------------------------------------------------------------------------------------------------------------------------
-			# 		Node Communication
-			print "I2C successfully written, System now sleeps!"
+				#-----------------------------------------------------------------------------------------------------------------------------------
+				# 		Node Communication
+				#print "I2C successfully written, System now sleeps!"
 			
-			#logging instead of printing!! warnings and errors - throw rest away
+				#logging instead of printing!! warnings and errors - throw rest away
 			
 			
-			#constants instead of "magic numbers"
-			sleep(90)	#Here should be placed execfile("/home/pi/spn_controller/howEverYouCallit.py") - python script or program for node communication => wait for shutdown-request
+				#constants instead of "magic numbers"
+				sleep(sleep_constant)	#Here should be placed execfile("/home/pi/spn_controller/howEverYouCallit.py") - python script or program for node communication => wait for shutdown-request
 			
-			#-----------------------------------------------------------------------------------------------------------------------------------
+				#-----------------------------------------------------------------------------------------------------------------------------------
 			
-			#don't hard-code the path!!
-			execfile("/home/pi/spn_controller/nodeOff.py")			#Runs the filde nodeOff.py -Switch off nodes	
+				#don't hard-code the path!!
+				nodeOff.nodeOff()			#Runs the filde nodeOff.py -Switch off nodes	
+				logging.info('Turn off nodes')
 
-			#Here should the cell modem send the collected data to the server
+				#Here should the cell modem send the collected data to the server
 
-			execfile("/home/pi/spn_controller/rtcCatchTime.py")		#The RTC catches the time from the PI
+				rtcCatchTime.catchtime()
+				logging.info('rtc got new correct time')
 			
-			execfile("/home/pi/spn_controller/rtcAlarmTimetable.py")	#Programs the new alarm as it stand in the updated timetable
-			
+				rtcAlarmTimetable.newAlarm()	#Programs the new alarm as it stand in the updated timetable
+				logging.info('new alarm is programmed')
+			else:
+				logging.warning('Temperature in the case is over 80C')	#Returns that the Temp. is too high for running the system - maybe something is destroyed
 		else:
-			print "Temperature is over 80 degrees!!"	#Returns that the Temp. is too high for running the system - maybe something is destroyed
-	else:
-
-		print "Mppt says that battery is low"			#Says that the MPPT has disconnected the battery from the load
 		
-	execfile("/home/pi/spn_controller/shutdown.py")				#After setting the Alarm is shutdowns itself and wait for a new interrupt of the RTC
+			logging.warning('Mppt says that battery is too low!')			#Says that the MPPT has disconnected the battery from the load
+	#else:
+		#logging.warning('Fuel Gauge says that battery is too low!')
+				
+	logging.info('shutdown raspberry now')	
+	shutdown.shutdown()				#After setting the Alarm is shutdowns itself and wait for a new interrupt of the RTC
 
 except IOError, err:
 
 	print err
-	print "I2C-Bus-Failure!! Exception-Handling: maybe write email to sb i2c bus not working"
+	logging.error('I2C-bus failure!!-prove connection to PCB')
 

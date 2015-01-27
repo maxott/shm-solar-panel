@@ -1,9 +1,15 @@
 #!/usr/bin/python
 
+import smbus
+bus = smbus.SMBus(1)
+FG_Address = 0x55
+
+
 def RemainingCapacity():
-	import smbus
-	bus = smbus.SMBus(1)
-	FG_Address = 0x55
-	return bus.readworddata(FG_Address, 0x04)	#Reads 2 bytes from remaining-capacity-register of fuelgauge
+
+	return bus.read_word_data(FG_Address, 0x04)	#Reads 2 bytes from remaining-capacity-register of fuelgauge
+
+def StateOfCharge():
 	
-remaining_capacity = RemainingCapacity()
+	return bus.read_word_data(FG_Address, 0x02)	#Reads 2 bytes from remaining-capacity-register of fuelgauge	
+

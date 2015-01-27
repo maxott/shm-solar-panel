@@ -31,7 +31,7 @@ minute = 0
 
 initial = 0
 
-timetable = pickle.load( open( "/home/pi/make/timetableUpdate.p", "rb" ))			#timetable is initialed as an array from the timetabelUpdate 
+timetable = pickle.load( open( "/home/pi/spn_controller/timetableUpdate.p", "rb" ))			#timetable is initialed as an array from the timetabelUpdate 
 
 #-------------------------------------------------------
 # Main Program
@@ -40,8 +40,8 @@ timetable = pickle.load( open( "/home/pi/make/timetableUpdate.p", "rb" ))			#tim
 while counter < 2:
 	
 	if initial > 0:
-		pickle.dump(timetable, open("/home/pi/make/timetableUpdate.p","wb"))		#When you come the second time into the loop it saves the written data to file 
-		timetable = pickle.load( open( "/home/pi/make/timetableUpdate.p", "rb" )) 
+		pickle.dump(timetable, open("/home/pi/spn_controller/timetableUpdate.p","wb"))		#When you come the second time into the loop it saves the written data to file 
+		timetable = pickle.load( open( "/home/pi/spn_controller/timetableUpdate.p", "rb" )) 
 
 	i = len(timetable)	
 	for x in range (0,i-2):				#Prints every register exept the 0 registers and the last register,
@@ -386,5 +386,5 @@ while counter < 2:
 		
 		counter = 2
 
-		pickle.dump(timetable, open("/home/pi/make/timetableUpdate.p","wb"))
+		pickle.dump(timetable, open("/home/pi/spn_controller/timetableUpdate.p","wb"))
 

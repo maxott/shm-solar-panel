@@ -31,17 +31,16 @@ bit7 = 0b10000000
 alarm_input = 0
 
 #-------------------------------------------------------
-# Class(es)
+# Functions
 #-------------------------------------------------------
 
-class RTC:
 
-	def safteyAlarm(self):
+def safety():
 		
 	bus.write_byte_data(rtc_address, 0x07, bit5)		#Sets the Alarm 1 to active
 	bus.write_byte_data(rtc_address, 0x14 , bit7 | bit5)	#Sets the Hour-Alarm-mode active
 	bus.write_byte_data(rtc_address, 0x13, DECtBCD(12))	#Programs a 12 o'clock alarm
-		
+	
 #-------------------------------------------------------
 # Functions
 #-------------------------------------------------------
@@ -55,7 +54,5 @@ def DECtBCD(dec):	#Function - calculates from Decimal to BCD
 
 	return (dec/10)*6 + dec
 
-RTC = RTC()
-RTC.safteyAlarm()
 
 

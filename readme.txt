@@ -79,7 +79,4 @@
 	$ sudo update-rc.d spn_controller defaults
 
 	
-Concerning this project is not finished there will be coming further patches. In the future we try to implement and configure the fuel gauge, which is on the PCB.
-There will also be certain updates to some files from time to time.
-Finally we want to put on the last patch in January 2015.
 

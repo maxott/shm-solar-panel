@@ -32,23 +32,15 @@ bit7 = 0b10000000
 # Functions
 #-------------------------------------------------------
 
-class Expander:
-	
-	def nodeOff(self):			#Function for cutting off node power
+def nodeOff():			#Function for cutting off node power
 
-		bus.write_byte_data(expander_address, 0x00, 0)          #Expander configuration lines
-		bus.write_byte_data(expander_address, 0x01, bit1)	#Sets GPIO1 to output
+	bus.write_byte_data(expander_address, 0x00, 0)          #Expander configuration lines
+	bus.write_byte_data(expander_address, 0x01, bit1)	#Sets GPIO1 to output
 
 
-		bus.write_byte_data(expander_address,0x09,bit1)		#Sets GPIO1 to true
-		time.sleep(0.1)
-		bus.write_byte_data(expander_address,0x09,0)		#Have to be cleared otherwise it's setting all the time
-		return -1
+	bus.write_byte_data(expander_address,0x09,bit1)		#Sets GPIO1 to true
+	time.sleep(0.1)
+	bus.write_byte_data(expander_address,0x09,0)		#Have to be cleared otherwise it's setting all the time
+	return -1
 
 
-#-------------------------------------------------------
-# Main Program
-#-------------------------------------------------------
-
-Expander = Expander()
-Expander.nodeOff()				#Excutes the function nodeOff
